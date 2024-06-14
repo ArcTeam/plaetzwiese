@@ -1,0 +1,39 @@
+html, body{position:relative; width:100%; height:100%; font-family: sans-serif; padding:0; margin:0;}
+header, footer{position:absolute;height:60px;padding:5px 20px; background-color: var(--bs-tertiary-bg);}
+header{top:0;left:0;width:100%;}
+footer{bottom:0;left:0;width:100%;}
+
+#wrapVideo > video{position:relative;margin:0 auto;width:100%;height:100%;border-radius: .5rem;}
+
+#map{position: relative; width:100%; height:100%;}
+#chart > canvas{width:99%; margin:auto;}
+
+@media (min-width: 368px) {}
+
+@media (min-width: 576px) {}
+
+@media (min-width: 768px) {}
+
+@media (min-width: 992px) {}
+
+@media (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape) {}
+
+@media (min-width: 1200px) {
+  #wrapVideo, #mapContainer, #chart, #insta3d{position:absolute; border-radius: var(--bs-border-radius); padding:10px;}
+  #wrapVideo{top:65px; left:0; width:33%;}
+  #mapContainer{top:65px; left:33%; width:33%;}
+  #chart{top: calc(60% + 70px); }
+  #insta3d{top:65px; right:0; width:34%; height: calc(100% - 130px);background-image: url("../img/camera-control.png"); background-position: center; background-repeat: no-repeat; background-size: contain;}
+  
+  .wrapVideo-drone{ height: calc(100% - 130px) }
+  .wrapVideo-ground{ height: 60%; }
+
+  .map-drone{height: 60%;}
+  .map-ground{ height: calc(100% - 130px)}
+  .chart-drone{left: 33%; height: 27%; width: 33%; }
+  .chart-ground {left: 10px; height: calc(40% - 140px); width: calc(33% - 10px);}
+
+
+}
+
+/* @media (min-width: 1400px) {} */

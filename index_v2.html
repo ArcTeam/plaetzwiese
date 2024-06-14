@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video e Mappa Sincronizzati</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+      video { position: relative; display: inline-block; width: 40%; height: 500px; margin: 20px; }
+      #map { position: relative; display: inline-block; width: 40%; height: 500px; margin: 20px; }
+      #controls { position: relative; display: block; margin-top: 20px; width: 100%; }
+      #playPauseButton { margin-right: 10px; }
+      #slider{width:80%;}
+    </style>
+</head>
+<body>
+
+<video id="video" controls preload="metadata">
+    <source src="assets/video/drone.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+</video>
+
+<div id="map"></div>
+
+<div id="controls">
+    <button id="playPauseButton">Play</button>
+    <input type="range" id="slider" min="0" max="100" value="0">
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+// Inizializza la mappa
+var map = L.map('map').setView([51.505, -0.09], 13);
+
+// Aggiungi il tile layer a OpenStreetMap
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19
+}).addTo(map);
+
+// Crea un percorso e un marker
+var route = [
+    [51.505, -0.09],
+    [51.51, -0.1],
+    [51.51, -0.12]
+];
+var polyline = L.polyline(route, { color: 'red' }).addTo(map);
+var marker = L.marker(route[0]).addTo(map);
+
+// Sincronizza video, slider e marker
+var video = document.getElementById('video');
+var slider = document.getElementById('slider');
+var playPauseButton = document.getElementById('playPauseButton');
+
+// Carica i metadati dal file JSON
+fetch('assets/video/metadata.json')
+    .then(response => response.json())
+    .then(data => {
+        console.log('Loaded metadata:', data);
+        video.duration = data.video.duration;
+        slider.max = data.video.duration;
+    })
+    .catch(error => console.error('Error loading metadata:', error));
+
+// Aggiorna il marker e il video in base al valore dello slider
+slider.addEventListener('input', function() {
+    var value = slider.value;
+    console.log('Slider input:', value);
+    video.currentTime = value;
+    updateMarker(value);
+});
+
+// Aggiorna il marker in base al tempo corrente del video
+video.addEventListener('timeupdate', function() {
+    slider.value = video.currentTime;
+    console.log('Video timeupdate:', video.currentTime);
+    updateMarker(video.currentTime);
+});
+
+// Controlla il pulsante Play/Pause
+playPauseButton.addEventListener('click', function() {
+    if (video.paused) {
+        video.play();
+        playPauseButton.textContent = 'Pause';
+    } else {
+        video.pause();
+        playPauseButton.textContent = 'Play';
+    }
+});
+
+function updateMarker(time) {
+    var maxTime = video.duration;
+    if (maxTime === 0) return;
+    var segmentCount = route.length - 1;
+    var segmentTime = maxTime / segmentCount;
+    var segmentIndex = Math.floor(time / segmentTime);
+    if (segmentIndex >= segmentCount) {
+        segmentIndex = segmentCount - 1;
+    }
+
+    var segmentStart = route[segmentIndex];
+    var segmentEnd = route[segmentIndex + 1];
+    var segmentElapsedTime = time - (segmentIndex * segmentTime);
+    var segmentFraction = segmentElapsedTime / segmentTime;
+
+    var lat = segmentStart[0] + (segmentEnd[0] - segmentStart[0]) * segmentFraction;
+    var lng = segmentStart[1] + (segmentEnd[1] - segmentStart[1]) * segmentFraction;
+
+    marker.setLatLng([lat, lng]);
+}
+</script>
+
+</body>
+</html>
