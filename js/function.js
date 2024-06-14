@@ -24,7 +24,9 @@ const gSatTile = 'http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}';
 const gSubDomains = ['mt0','mt1','mt2','mt3'];
 const center = [46.663469, 12.161168];
 const zoom = 13;
+let marker;
 let markerArr = [];
+let instaMap = [];
 let markerIco = L.icon({iconUrl: 'img/camera-marker.png', iconSize: [25,25], iconAnchor: [12,12], popupAnchor: [-3, -76]})
 let sentiero, posizione;
 
@@ -151,9 +153,10 @@ function initMap(){
     tmp[0] = parseFloat(lat).toFixed(4)
     tmp[1] = parseFloat(lng).toFixed(4)
     markerArr.push([insta.features[i].properties.id,tmp]);
+    instaMap.push( { lat: parseFloat(lat), lng: parseFloat(lng), id: parseInt(insta.features[i].properties.id)})
   }
   
-  let marker = L.geoJSON(insta, {
+  marker = L.geoJSON(insta, {
     pointToLayer: function (feature, latlng) {return L.marker(latlng, {icon: markerIco});}
   }).addTo(map);
 
@@ -217,13 +220,45 @@ function loadVideo(file){
 // Aggiorna il marker e il video in base al valore dello slider
 slider.addEventListener('input', function() {
   var value = slider.value;
-  console.log('Slider input:', value);
   video.currentTime = value;
   updateMarker(value);
   updateTooltip(value);
 });
+
 // Aggiorna il marker in base al tempo corrente del video
+var videoPausedForCurrentPOI = false;
+var currentPointOfInterest = null;
 video.addEventListener('timeupdate', function() {
+  var nearestPointOfInterest = null;
+  var nearestDistance = Infinity;
+
+  instaMap.forEach(point => {
+    var markerLatLng = posizione.getLatLng();
+    var pointLatLng = L.latLng(point.lat, point.lng);
+    var distance = markerLatLng.distanceTo(pointLatLng);
+
+    // Se è più vicino del punto di interesse attuale e sotto la tua tolleranza
+    if (distance < nearestDistance && distance < 3) {
+      nearestDistance = distance;
+      nearestPointOfInterest = point;
+    }
+  });
+  
+  // Se il punto di interesse è diverso da quello attuale, resetta il flag di pausa
+  if (nearestPointOfInterest !== currentPointOfInterest) {
+    currentPointOfInterest = nearestPointOfInterest;
+    videoPausedForCurrentPOI = false;
+  }
+  // Controlla se il video è vicino al punto di interesse e non è già stato fermato
+  if (nearestPointOfInterest && !videoPausedForCurrentPOI && nearestDistance < 3) {
+    console.log(nearestPointOfInterest);
+    video.pause()
+    init360(nearestPointOfInterest.id+'.jpg');
+    animate();
+    $("#playPauseIco").removeClass('mdi-pause').addClass('mdi-play')
+    videoPausedForCurrentPOI = true;
+  }
+
   slider.value = video.currentTime;
   updateMarker(video.currentTime);
   updateTooltip(video.currentTime);
@@ -259,12 +294,7 @@ function updateTooltip(time) {
   var segmentCount = chartData.length - 1;
   var segmentTime = maxTime / segmentCount;
   var segmentIndex = Math.floor(time / segmentTime);
-
-  altitudeChart.tooltip.setActiveElements([{
-      datasetIndex: 0,
-      index: segmentIndex
-  }], { x: segmentIndex, y: chartData[segmentIndex] });
-
+  altitudeChart.tooltip.setActiveElements([{datasetIndex: 0, index: segmentIndex}], { x: segmentIndex, y: chartData[segmentIndex] });
   altitudeChart.update();
 }
 
@@ -274,7 +304,6 @@ function resizeDOM(el){
   videoContainer.classList.replace('wrapVideo-'+dropClass, 'wrapVideo-'+el);
   mapContainer.classList.replace('map-'+dropClass, 'map-'+el);
   chartContainer.classList.replace('chart-'+dropClass, 'chart-'+el);
-
 }
 
 const setStyle = (el, rule, val) => (el.style[rule] = val);
