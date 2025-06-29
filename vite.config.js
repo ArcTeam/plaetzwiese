@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite'
 
 export default defineConfig({
+  // Configurazione per GitHub Pages - IMPORTANTE!
+  base: process.env.NODE_ENV === 'production' ? '/plaetzwiese/' : '/',
   root: '.',
   publicDir: 'assets',
   server: {
