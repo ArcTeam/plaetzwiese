@@ -4,7 +4,7 @@ export default defineConfig({
   // Configurazione per GitHub Pages - IMPORTANTE!
   base: process.env.NODE_ENV === 'production' ? '/plaetzwiese/' : '/',
   root: '.',
-  publicDir: 'assets',
+  publicDir: 'public', // Sposta tutto in una cartella public/
   server: {
     port: 3001,
     open: true,
