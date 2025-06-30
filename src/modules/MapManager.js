@@ -78,8 +78,9 @@ export class MapManager {
   processMarkers() {
     for (let i = 0; i < insta360Data.features.length; i++) {
       var tmp = [];
-      let lat = insta360Data.features[i].geometry.coordinates[1];
+      // GeoJSON coordinates are [longitude, latitude]
       let lng = insta360Data.features[i].geometry.coordinates[0];
+      let lat = insta360Data.features[i].geometry.coordinates[1];
       tmp[0] = parseFloat(lat).toFixed(4);
       tmp[1] = parseFloat(lng).toFixed(4);
       this.markerArr.push([insta360Data.features[i].properties.id, tmp]);

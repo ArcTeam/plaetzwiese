@@ -8,7 +8,13 @@ export default defineConfig({
   server: {
     port: 3001,
     open: true,
-    host: true // Espone il server sulla rete locale
+    host: true, // Espone il server sulla rete locale
+    hmr: {
+      overlay: true
+    },
+    watch: {
+      usePolling: true // Utile per alcuni filesystem
+    }
   },
   build: {
     outDir: 'dist',
