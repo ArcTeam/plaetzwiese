@@ -16,12 +16,29 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: './index.html'
+      },
+      output: {
+        manualChunks: {
+          // Separa le librerie principali in chunk dedicati
+          'vendor-three': ['three'],
+          'vendor-leaflet': ['leaflet'],
+          'vendor-chart': ['chart.js'],
+          // Raggruppa utility e moduli dell'app
+          'app-modules': [
+            './src/modules/MapManager.js',
+            './src/modules/VideoManager.js',
+            './src/modules/ChartManager.js',
+            './src/modules/Viewer360.js'
+          ]
+        }
       }
     },
     // Ottimizzazioni per produzione
     minify: 'terser',
     sourcemap: false,
-    reportCompressedSize: true
+    reportCompressedSize: true,
+    // Aumenta il limite per evitare warning (opzionale)
+    chunkSizeWarningLimit: 1000
   },
   preview: {
     port: 3001,
